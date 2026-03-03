@@ -62,7 +62,10 @@ _HERMES_CORE_TOOLS = [
     "send_message",
     # Honcho user context (gated on honcho being active via check_fn)
     "query_user_context",
+    # Desktop notifications
+    "notify", "notify_sound",
 ]
+
 
 
 # Core toolset definitions
@@ -191,6 +194,12 @@ TOOLSETS = {
     "honcho": {
         "description": "Honcho AI-native memory for persistent cross-session user modeling",
         "tools": ["query_user_context"],
+        "includes": []
+    },
+    
+    "notification": {
+        "description": "Desktop notification and system sound tools for alerting the user to task completion",
+        "tools": ["notify", "notify_sound"],
         "includes": []
     },
     
