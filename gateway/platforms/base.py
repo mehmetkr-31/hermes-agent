@@ -1097,6 +1097,7 @@ SUPPORTED_DOCUMENT_TYPES = {
     ".md": "text/markdown",
     ".txt": "text/plain",
     ".csv": "text/csv",
+    ".tsv": "text/tab-separated-values",
     ".log": "text/plain",
     ".json": "application/json",
     ".xml": "application/xml",
@@ -1161,6 +1162,13 @@ SUPPORTED_IMAGE_DOCUMENT_TYPES = {
 # ``gateway/run.py``.
 # ---------------------------------------------------------------------------
 
+# Derive document/data/code extensions from SUPPORTED_DOCUMENT_TYPES so the
+# media whitelist stays in sync with the document cache (issue #29609).
+# Remove .zip to avoid duplication with the Archives section below.
+_DOCUMENT_EXTS_FROM_SUPPORTED = tuple(
+    ext for ext in SUPPORTED_DOCUMENT_TYPES if ext != ".zip"
+)
+
 MEDIA_DELIVERY_EXTS: Tuple[str, ...] = (
     # Images (embed inline)
     ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".svg",
@@ -1168,10 +1176,8 @@ MEDIA_DELIVERY_EXTS: Tuple[str, ...] = (
     ".mp4", ".mov", ".avi", ".mkv", ".webm",
     # Audio (delivered as voice/audio where supported)
     ".mp3", ".wav", ".ogg", ".opus", ".m4a", ".flac",
-    # Documents (uploaded as file attachments)
-    ".pdf", ".docx", ".doc", ".odt", ".rtf", ".txt", ".md", ".epub",
-    # Spreadsheets / data
-    ".xlsx", ".xls", ".ods", ".csv", ".tsv", ".json", ".xml", ".yaml", ".yml",
+    # Documents / data / code — dynamically derived from SUPPORTED_DOCUMENT_TYPES
+    *_DOCUMENT_EXTS_FROM_SUPPORTED,
     # Presentations
     ".pptx", ".ppt", ".odp", ".key",
     # Archives
