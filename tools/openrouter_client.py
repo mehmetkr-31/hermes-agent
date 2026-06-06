@@ -6,6 +6,7 @@ agent/auxiliary_client.py so auth, headers, and API format are handled
 consistently.
 """
 
+import atexit
 import os
 
 _client = None
@@ -26,6 +27,24 @@ def get_async_client():
             raise ValueError("OPENROUTER_API_KEY environment variable not set")
         _client = client
     return _client
+
+
+def close_client() -> None:
+    """Close the shared async client and release its HTTP connection pool.
+
+    Safe to call multiple times (idempotent). Registered with atexit so
+    the pool is cleaned up on interpreter shutdown.
+    """
+    global _client
+    if _client is not None:
+        try:
+            _client.close()
+        except Exception:
+            pass
+        _client = None
+
+
+atexit.register(close_client)
 
 
 def check_api_key() -> bool:
