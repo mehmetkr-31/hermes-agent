@@ -3708,7 +3708,12 @@ def parallel_search_sources(
                     if on_source_done:
                         on_source_done(sid, len(results))
                 except Exception:
-                    pass
+                    logger.warning(
+                        "Skill source %s search failed for query %r",
+                        futures[fut],
+                        query,
+                        exc_info=True,
+                    )
         except TimeoutError:
             timed_out_ids = [
                 futures[f] for f in futures if not f.done()
