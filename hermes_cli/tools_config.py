@@ -799,10 +799,9 @@ def _run_cua_driver_installer(label: str = "Installing", verbose: bool = True) -
     import shutil
     import subprocess
 
-    install_cmd = (
-        "/bin/bash -c \"$(curl -fsSL "
+    install_url = (
         "https://raw.githubusercontent.com/trycua/cua/main/"
-        "libs/cua-driver/scripts/install.sh)\""
+        "libs/cua-driver/scripts/install.sh"
     )
     if verbose:
         _print_info(f"    {label} cua-driver (macOS background computer-use)...")
@@ -810,7 +809,25 @@ def _run_cua_driver_installer(label: str = "Installing", verbose: bool = True) -
         _print_info(f"    {label} cua-driver...")
     driver_cmd = _cua_driver_cmd()
     try:
-        result = subprocess.run(install_cmd, shell=True, timeout=300)
+        # Download script to a temp file before executing to avoid
+        # curl|bash pipe vulnerabilities (MITM / repo compromise).
+        import tempfile
+        import urllib.request
+
+        with tempfile.NamedTemporaryFile(
+            mode="wb", suffix=".sh", delete=False
+        ) as tmp:
+            tmp.write(urllib.request.urlopen(install_url, timeout=60).read())
+            tmp_path = tmp.name
+        try:
+            result = subprocess.run(
+                ["/bin/bash", tmp_path], shell=False, timeout=300
+            )
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
         if result.returncode == 0 and shutil.which(driver_cmd):
             if verbose:
                 _print_success(f"    {driver_cmd} installed.")
